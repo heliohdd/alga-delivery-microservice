@@ -11,7 +11,7 @@ services:
     networks:
       - local-network
   pgadmin:
-    image: dpage/pgadmin4:9.5
+    image: dpage/pgadmin4:9.6
     depends_on:
       - postgres
     environment:
