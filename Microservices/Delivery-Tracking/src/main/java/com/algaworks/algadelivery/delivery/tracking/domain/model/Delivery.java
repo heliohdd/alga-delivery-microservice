@@ -69,7 +69,7 @@ public class Delivery {
         calculateTotalItems();
     }
 
-    public void editPreparationDetails(DetailsPreparation details){
+    public void editPreparationDetails(PreparationDetails details){
         verifyIfCanBeEdited();
 
         setSender(details.getSender());
@@ -134,7 +134,7 @@ public class Delivery {
     @Getter
     @AllArgsConstructor
     @Builder
-    public static class DetailsPreparation {
+    public static class PreparationDetails {
         private ContactPoint sender;
         private ContactPoint recipient;
         private BigDecimal distanceFee;
