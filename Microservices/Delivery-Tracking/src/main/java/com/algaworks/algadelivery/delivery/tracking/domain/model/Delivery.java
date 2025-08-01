@@ -87,13 +87,13 @@ public class Delivery {
 
     public void place() {
         verifyIfCanBePlaced();
-        this.setStatus(DeliveryStatus.WAITING_FOR_COURIER);
+        changeStatusTo(DeliveryStatus.WAITING_FOR_COURIER);
         this.setPlacedAt(OffsetDateTime.now());
     }
 
     public void pickup(UUID courierId) {
         setCourierId(courierId);
-        this.setStatus(DeliveryStatus.IN_TRANSIT);
+        changeStatusTo(DeliveryStatus.IN_TRANSIT);
         this.setAssignedAt(OffsetDateTime.now());
     }
 
@@ -129,6 +129,13 @@ public class Delivery {
         if(!getStatus().equals(DeliveryStatus.DRAFT)){
             throw new DomainException("Delivery cannot be edited");
         }
+    }
+
+    private void changeStatusTo(DeliveryStatus newStatus) {
+        if(newStatus != null && this.getStatus().canNotChangeTo(newStatus)){
+            throw new DomainException("Delivery cannot be changed from " + this.getStatus() + " to " + newStatus);
+        }
+        this.setStatus(newStatus);
     }
 
     @Getter
