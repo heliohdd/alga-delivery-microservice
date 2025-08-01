@@ -1,11 +1,10 @@
 package com.algaworks.algadelivery.delivery.tracking.domain.model;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import com.algaworks.algadelivery.delivery.tracking.domain.model.exception.DomainException;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -70,12 +69,24 @@ public class Delivery {
         calculateTotalItems();
     }
 
+    public void editPreparationDetails(DetailsPreparation details){
+        verifyIfCanBeEdited();
+
+        setSender(details.getSender());
+        setRecipient(details.getRecipient());
+        setDistanceFee(details.getDistanceFee());
+        setCourierPayout(details.getCourierPayout());
+        setExpectedDeliveryAt(OffsetDateTime.now().plus(details.getExpectedDeliveryTime()));
+        setTotalCost(this.getDistanceFee().add(this.getCourierPayout()));
+    }
+
     public void removeAllItems() {
         items.clear();
         calculateTotalItems();
     }
 
     public void place() {
+        verifyIfCanBePlaced();
         this.setStatus(DeliveryStatus.WAITING_FOR_COURIER);
         this.setPlacedAt(OffsetDateTime.now());
     }
@@ -100,5 +111,34 @@ public class Delivery {
         int totalItems = getItems().stream().mapToInt(Item::getQuantity).sum();
 
         setTotalItems(totalItems);
+    }
+
+    private void verifyIfCanBePlaced() {
+        if (!isFilled())
+            throw new DomainException("Item is not filled");
+        if (!getStatus().equals(DeliveryStatus.DRAFT)) {
+            throw new DomainException("Delivery cannot be delivered");
+        }
+    }
+
+    private boolean isFilled() {
+        return this.getSender() != null && this.getRecipient() != null && this.getTotalCost() != null;
+    }
+
+    private void verifyIfCanBeEdited() {
+        if(!getStatus().equals(DeliveryStatus.DRAFT)){
+            throw new DomainException("Delivery cannot be edited");
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    @Builder
+    public static class DetailsPreparation {
+        private ContactPoint sender;
+        private ContactPoint recipient;
+        private BigDecimal distanceFee;
+        private BigDecimal courierPayout;
+        private Duration expectedDeliveryTime;
     }
 }
