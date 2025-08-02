@@ -1,6 +1,7 @@
 package com.algaworks.algadelivery.delivery.tracking.domain.model;
 
 import com.algaworks.algadelivery.delivery.tracking.domain.model.exception.DomainException;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -11,11 +12,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@Entity
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Setter(AccessLevel.PRIVATE)
 @Getter
 public class Delivery {
 
+    @Id
     @EqualsAndHashCode.Include
     private UUID id;
     private UUID courierId;
@@ -33,10 +36,30 @@ public class Delivery {
 
     private Integer totalItems;
 
-    private List<Item> items = new ArrayList<>();
-
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "zipCode", column = @Column(name = "sender_zip_code")),
+            @AttributeOverride(name = "street", column = @Column(name = "sender_street")),
+            @AttributeOverride(name = "number", column = @Column(name = "sender_number")),
+            @AttributeOverride(name = "complement", column = @Column(name = "sender_complement")),
+            @AttributeOverride(name = "name", column = @Column(name = "sender_name")),
+            @AttributeOverride(name = "phone", column = @Column(name = "sender_phone"))
+    })
     private ContactPoint sender;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "zipCode", column = @Column(name = "recipient_zip_code")),
+            @AttributeOverride(name = "street", column = @Column(name = "recipient_street")),
+            @AttributeOverride(name = "number", column = @Column(name = "recipient_number")),
+            @AttributeOverride(name = "complement", column = @Column(name = "recipient_complement")),
+            @AttributeOverride(name = "name", column = @Column(name = "recipient_name")),
+            @AttributeOverride(name = "phone", column = @Column(name = "recipient_phone"))
+    })
     private ContactPoint recipient;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "delivery")
+    private List<Item> items = new ArrayList<>();
 
     public static Delivery draft() {
         Delivery delivery = new Delivery();
@@ -52,7 +75,7 @@ public class Delivery {
     }
 
     public UUID addItem(String name, Integer quantity) {
-        Item item = Item.brandNew(name, quantity);
+        Item item = Item.brandNew(name, quantity, this);
         items.add(item);
         calculateTotalItems();
         return item.getId();
@@ -69,7 +92,7 @@ public class Delivery {
         calculateTotalItems();
     }
 
-    public void editPreparationDetails(PreparationDetails details){
+    public void editPreparationDetails(PreparationDetails details) {
         verifyIfCanBeEdited();
 
         setSender(details.getSender());
@@ -114,8 +137,7 @@ public class Delivery {
     }
 
     private void verifyIfCanBePlaced() {
-        if (!isFilled())
-            throw new DomainException("Item is not filled");
+        if (!isFilled()) throw new DomainException("Item is not filled");
         if (!getStatus().equals(DeliveryStatus.DRAFT)) {
             throw new DomainException("Delivery cannot be delivered");
         }
@@ -126,13 +148,13 @@ public class Delivery {
     }
 
     private void verifyIfCanBeEdited() {
-        if(!getStatus().equals(DeliveryStatus.DRAFT)){
+        if (!getStatus().equals(DeliveryStatus.DRAFT)) {
             throw new DomainException("Delivery cannot be edited");
         }
     }
 
     private void changeStatusTo(DeliveryStatus newStatus) {
-        if(newStatus != null && this.getStatus().canNotChangeTo(newStatus)){
+        if (newStatus != null && this.getStatus().canNotChangeTo(newStatus)) {
             throw new DomainException("Delivery cannot be changed from " + this.getStatus() + " to " + newStatus);
         }
         this.setStatus(newStatus);
