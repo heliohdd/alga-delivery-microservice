@@ -103,7 +103,7 @@ public class Delivery {
         setTotalCost(this.getDistanceFee().add(this.getCourierPayout()));
     }
 
-    public void removeAllItems() {
+    public void removeItems() {
         items.clear();
         calculateTotalItems();
     }
