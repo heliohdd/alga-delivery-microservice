@@ -1,6 +1,6 @@
 package com.algaworks.algadelivery.delivery.tracking.domain.model;
 
-import com.algaworks.algadelivery.delivery.tracking.domain.model.exception.DomainException;
+import com.algaworks.algadelivery.delivery.tracking.domain.exception.DomainException;
 import jakarta.persistence.*;
 import lombok.*;
 

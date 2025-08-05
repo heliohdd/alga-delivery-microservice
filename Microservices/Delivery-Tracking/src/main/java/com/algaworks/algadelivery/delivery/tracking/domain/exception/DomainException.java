@@ -1,4 +1,4 @@
-package com.algaworks.algadelivery.delivery.tracking.domain.model.exception;
+package com.algaworks.algadelivery.delivery.tracking.domain.exception;
 
 public class DomainException extends RuntimeException {
 
