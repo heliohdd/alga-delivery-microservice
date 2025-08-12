@@ -1,8 +1,11 @@
 package com.algaworks.algadelivery.courier.Management.api.controller;
 
 import com.algaworks.algadelivery.courier.Management.api.model.CourierInput;
+import com.algaworks.algadelivery.courier.Management.api.model.CourierPayoutCalculationInput;
+import com.algaworks.algadelivery.courier.Management.api.model.CourierPayoutResultModel;
 import com.algaworks.algadelivery.courier.Management.domain.model.Courier;
 import com.algaworks.algadelivery.courier.Management.domain.repository.CourierRepository;
+import com.algaworks.algadelivery.courier.Management.domain.service.CourierPayoutService;
 import com.algaworks.algadelivery.courier.Management.domain.service.CourierRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @RestController
@@ -20,9 +24,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CourierController {
 
-    public final CourierRegistrationService courierRegistrationService;
+    private final CourierRegistrationService courierRegistrationService;
 
-    public final CourierRepository courierRepository;
+    private final CourierRepository courierRepository;
+
+    private final CourierPayoutService courierPayoutService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -43,5 +49,13 @@ public class CourierController {
     @GetMapping("/{courierId}")
     public Courier findById(@PathVariable UUID courierId) {
         return courierRepository.findById(courierId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    @PostMapping("/payout-calculation")
+    public CourierPayoutResultModel calculate(
+            @RequestBody CourierPayoutCalculationInput input){
+        BigDecimal payoutFee = courierPayoutService.calculate(
+                input.getDistanceInKm());
+        return new CourierPayoutResultModel(payoutFee);
     }
 }
