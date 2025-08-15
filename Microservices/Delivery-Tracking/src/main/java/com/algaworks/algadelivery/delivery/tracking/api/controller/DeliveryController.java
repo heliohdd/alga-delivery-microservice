@@ -8,8 +8,6 @@ import com.algaworks.algadelivery.delivery.tracking.domain.service.DeliveryCheck
 import com.algaworks.algadelivery.delivery.tracking.domain.service.DeliveryPreparationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedModel;
@@ -53,17 +51,17 @@ public class DeliveryController {
     }
 
     @PostMapping("/{deliveryId}/placement")
-    public void place(@PathVariable UUID deliveryId){
+    public void place(@PathVariable UUID deliveryId) {
         deliveryCheckpointService.place(deliveryId);
     }
 
     @PostMapping("/{deliveryId}/pickups")
-    public void pickup(@PathVariable UUID deliveryId, @Valid @RequestBody CourierIdInput input){
+    public void pickup(@PathVariable UUID deliveryId, @Valid @RequestBody CourierIdInput input) {
         deliveryCheckpointService.pickup(deliveryId, input.getCourierId());
     }
 
     @PostMapping("/{deliveryId}/completion")
-    public void complete(@PathVariable UUID deliveryId){
+    public void complete(@PathVariable UUID deliveryId) {
         deliveryCheckpointService.complete(deliveryId);
     }
 }
